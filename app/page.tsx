@@ -6,10 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { BookOpen, Clock, Star } from "lucide-react"
-import { verbs as initialVerbs, type Verb } from "@/lib/verbs-data"
+import { verbs, type Verb } from "@/lib/verbs-data"
 import { Navigation } from "@/components/navigation"
-import { AddVerbModal } from "@/components/add-verb-modal"
-import { useToast } from "@/hooks/use-toast"
 
 interface TenseExample {
   tense: string
@@ -100,31 +98,8 @@ function generateTenseExamples(verb: Verb): TenseExample[] {
 }
 
 export default function EnglishVerbsPage() {
-  const [verbs, setVerbs] = useState<Verb[]>(initialVerbs)
-  const [selectedVerb, setSelectedVerb] = useState<Verb>(initialVerbs[0])
-  const { toast } = useToast()
+  const [selectedVerb, setSelectedVerb] = useState<Verb>(verbs[0])
   const tenseExamples = generateTenseExamples(selectedVerb)
-
-  const handleAddVerb = (newVerb: Verb) => {
-    // Check if verb already exists
-    const existingVerb = verbs.find((v) => v.id === newVerb.id)
-    if (existingVerb) {
-      toast({
-        title: "Verb already exists",
-        description: `The verb "${newVerb.infinitive}" is already in the list.`,
-        variant: "destructive",
-      })
-      return
-    }
-
-    const updatedVerbs = [...verbs, newVerb].sort((a, b) => a.infinitive.localeCompare(b.infinitive))
-    setVerbs(updatedVerbs)
-    setSelectedVerb(newVerb) // Select the newly added verb
-    toast({
-      title: "Verb added successfully!",
-      description: `"${newVerb.infinitive}" has been added to the verb list.`,
-    })
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -150,20 +125,13 @@ export default function EnglishVerbsPage() {
           <div className="lg:col-span-1">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5" />
-                      Select Verb
-                    </CardTitle>
-                    <CardDescription>Choose a verb to explore its conjugations</CardDescription>
-                  </div>
-                </div>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Select Verb
+                </CardTitle>
+                <CardDescription>Choose a verb to explore its conjugations</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <div className="mb-4">
-                  <AddVerbModal onAddVerb={handleAddVerb} />
-                </div>
                 {verbs.map((verb) => (
                   <Button
                     key={verb.id}
