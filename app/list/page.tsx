@@ -1,16 +1,22 @@
 "use client"
 
 import { useState } from "react"
-import { Play, Square } from "lucide-react"
+import { Play, Square, Star, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { BookOpen } from "lucide-react"
 import { verbs } from "@/lib/verbs-data"
 import { Navigation } from "@/components/navigation"
+import { useFavorites } from "@/hooks/use-favorites"
 
 export default function VerbListPage() {
   const [playingVerb, setPlayingVerb] = useState<string | null>(null)
+  const { toggleFavorite, isFavorite, favoritesCount } = useFavorites()
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
+
+  // Filtrar verbos baseado no filtro de favoritos
+  const filteredVerbs = showOnlyFavorites ? verbs.filter((verb) => isFavorite(verb.id)) : verbs
 
   const speakText = (text: string, lang = "en-US"): Promise<void> => {
     return new Promise((resolve) => {
@@ -80,18 +86,39 @@ export default function VerbListPage() {
           <Navigation />
         </div>
 
+        {/* Filtro de Favoritos */}
+        <div className="flex justify-center mb-6">
+          <Button
+            variant={showOnlyFavorites ? "default" : "outline"}
+            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+            className="flex items-center gap-2"
+            disabled={favoritesCount === 0}
+          >
+            <Filter className="h-4 w-4" />
+            {showOnlyFavorites ? "Mostrar Todos" : "Apenas Favoritos"}
+            {favoritesCount > 0 && (
+              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
+                {favoritesCount}
+              </span>
+            )}
+          </Button>
+        </div>
+
         {/* Verbs List */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Irregular Verbs ({verbs.length} verbs)</span>
+              <span>
+                Irregular Verbs ({filteredVerbs.length}
+                {showOnlyFavorites ? " favoritos" : ` de ${verbs.length}`} verbos)
+              </span>
               <Badge variant="secondary">Essential Forms</Badge>
             </CardTitle>
             <CardDescription>Essential forms of each irregular verb with Portuguese translations</CardDescription>
           </CardHeader>
           <CardContent>
             {/* Table Header */}
-            <div className="grid grid-cols-7 gap-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold text-sm mb-4">
+            <div className="grid grid-cols-8 gap-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold text-sm mb-4">
               <div>Infinitive</div>
               <div className="text-orange-600 dark:text-orange-400">Simple Present</div>
               <div>Past Simple</div>
@@ -99,14 +126,15 @@ export default function VerbListPage() {
               <div className="text-green-600 dark:text-green-400">Gerund</div>
               <div>Translation</div>
               <div className="text-center">Audio</div>
+              <div className="text-center">Favorite</div>
             </div>
 
             {/* Verbs List */}
             <div className="space-y-2">
-              {verbs.map((verb, index) => (
+              {filteredVerbs.map((verb, index) => (
                 <div
                   key={verb.id}
-                  className={`grid grid-cols-7 gap-4 p-4 rounded-lg border transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                  className={`grid grid-cols-8 gap-4 p-4 rounded-lg border transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${
                     index % 2 === 0 ? "bg-white dark:bg-gray-900" : "bg-gray-50 dark:bg-gray-800"
                   }`}
                 >
@@ -133,8 +161,33 @@ export default function VerbListPage() {
                       )}
                     </Button>
                   </div>
+                  <div className="flex justify-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleFavorite(verb.id)}
+                      className={`h-8 w-8 p-0 ${
+                        isFavorite(verb.id)
+                          ? "text-yellow-500 hover:text-yellow-600"
+                          : "text-gray-400 hover:text-yellow-500"
+                      }`}
+                    >
+                      <Star className={`h-4 w-4 ${isFavorite(verb.id) ? "fill-current" : ""}`} />
+                    </Button>
+                  </div>
                 </div>
               ))}
+              {showOnlyFavorites && filteredVerbs.length === 0 && (
+                <div className="text-center py-12">
+                  <Star className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                    Nenhum verbo favoritado
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-500">
+                    Clique na estrela ao lado de qualquer verbo para adicioná-lo aos seus favoritos!
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Summary */}

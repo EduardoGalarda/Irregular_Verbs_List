@@ -5,9 +5,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { BookOpen, Clock, Star } from "lucide-react"
+import { BookOpen, Clock, Star, Filter } from "lucide-react"
 import { verbs, type Verb } from "@/lib/verbs-data"
 import { Navigation } from "@/components/navigation"
+import { useFavorites } from "@/hooks/use-favorites"
 
 interface TenseExample {
   tense: string
@@ -99,6 +100,11 @@ function generateTenseExamples(verb: Verb): TenseExample[] {
 
 export default function EnglishVerbsPage() {
   const [selectedVerb, setSelectedVerb] = useState<Verb>(verbs[0])
+  const { toggleFavorite, isFavorite, favoritesCount } = useFavorites()
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
+
+  // Filtrar verbos baseado no filtro de favoritos
+  const filteredVerbs = showOnlyFavorites ? verbs.filter((verb) => isFavorite(verb.id)) : verbs
   const tenseExamples = generateTenseExamples(selectedVerb)
 
   return (
@@ -120,6 +126,24 @@ export default function EnglishVerbsPage() {
           <Navigation />
         </div>
 
+        {/* Filtro de Favoritos */}
+        <div className="flex justify-center mb-4">
+          <Button
+            variant={showOnlyFavorites ? "default" : "outline"}
+            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+            className="flex items-center gap-2"
+            disabled={favoritesCount === 0}
+          >
+            <Filter className="h-4 w-4" />
+            {showOnlyFavorites ? "Mostrar Todos" : "Apenas Favoritos"}
+            {favoritesCount > 0 && (
+              <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
+                {favoritesCount}
+              </span>
+            )}
+          </Button>
+        </div>
+
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Verb Selection Sidebar */}
           <div className="lg:col-span-1">
@@ -132,19 +156,39 @@ export default function EnglishVerbsPage() {
                 <CardDescription>Choose a verb to explore its conjugations</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                {verbs.map((verb) => (
-                  <Button
-                    key={verb.id}
-                    variant={selectedVerb.id === verb.id ? "default" : "outline"}
-                    className="w-full justify-start"
-                    onClick={() => setSelectedVerb(verb)}
-                  >
-                    <div className="text-left">
-                      <div className="font-semibold">{verb.infinitive}</div>
-                      <div className="text-xs opacity-70">{verb.translation}</div>
-                    </div>
-                  </Button>
+                {filteredVerbs.map((verb) => (
+                  <div key={verb.id} className="flex items-center gap-2">
+                    <Button
+                      variant={selectedVerb.id === verb.id ? "default" : "outline"}
+                      className="flex-1 justify-start"
+                      onClick={() => setSelectedVerb(verb)}
+                    >
+                      <div className="text-left">
+                        <div className="font-semibold">{verb.infinitive}</div>
+                        <div className="text-xs opacity-70">{verb.translation}</div>
+                      </div>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleFavorite(verb.id)}
+                      className={`h-8 w-8 p-0 ${
+                        isFavorite(verb.id)
+                          ? "text-yellow-500 hover:text-yellow-600"
+                          : "text-gray-400 hover:text-yellow-500"
+                      }`}
+                    >
+                      <Star className={`h-4 w-4 ${isFavorite(verb.id) ? "fill-current" : ""}`} />
+                    </Button>
+                  </div>
                 ))}
+                {showOnlyFavorites && filteredVerbs.length === 0 && (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                    <Star className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>Nenhum verbo favoritado ainda.</p>
+                    <p className="text-sm">Clique na estrela para adicionar favoritos!</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
