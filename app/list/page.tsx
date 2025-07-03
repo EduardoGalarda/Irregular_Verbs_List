@@ -42,23 +42,28 @@ export default function VerbListPage() {
     setPlayingVerb(verb.id)
 
     try {
+      // 1. Infinitive
       await speakText(verb.conjugation.infinitive)
       await new Promise((resolve) => setTimeout(resolve, 500))
 
+      // 2. Simple Present
       if (verb.id === "be") {
         await speakText("I am, you are, he is")
       } else {
-        await speakText(`He ${verb.conjugation.simplePresent}`)
+        await speakText(verb.conjugation.simplePresent)
       }
       await new Promise((resolve) => setTimeout(resolve, 500))
 
+      // 3. Gerund
+      await speakText(verb.conjugation.gerund)
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // 4. Past Simple
       await speakText(verb.conjugation.pastSimple)
       await new Promise((resolve) => setTimeout(resolve, 500))
 
+      // 5. Past Participle
       await speakText(verb.conjugation.pastParticiple)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      await speakText(verb.conjugation.gerund)
     } catch (error) {
       console.error("Error playing audio:", error)
     } finally {
@@ -121,9 +126,9 @@ export default function VerbListPage() {
             <div className="grid grid-cols-8 gap-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold text-sm mb-4">
               <div>Infinitive</div>
               <div className="text-orange-600 dark:text-orange-400">Simple Present</div>
+              <div className="text-green-600 dark:text-green-400">Gerund</div>
               <div>Past Simple</div>
               <div>Past Participle</div>
-              <div className="text-green-600 dark:text-green-400">Gerund</div>
               <div>Translation</div>
               <div className="text-center">Audio</div>
               <div className="text-center">Favorite</div>
@@ -142,9 +147,9 @@ export default function VerbListPage() {
                   <div className="font-medium text-orange-600 dark:text-orange-400">
                     {verb.conjugation.simplePresent}
                   </div>
+                  <div className="font-medium text-green-600 dark:text-green-400">{verb.conjugation.gerund}</div>
                   <div className="font-medium">{verb.conjugation.pastSimple}</div>
                   <div className="font-medium">{verb.conjugation.pastParticiple}</div>
-                  <div className="font-medium text-green-600 dark:text-green-400">{verb.conjugation.gerund}</div>
                   <div className="text-gray-600 dark:text-gray-400">{verb.translation}</div>
                   <div className="flex justify-center">
                     <Button
@@ -203,11 +208,11 @@ export default function VerbListPage() {
                 <p>
                   <strong>Past Simple:</strong> Used for completed actions in the past
                 </p>
-                <p>
-                  <strong>Past Participle:</strong> Used in perfect tenses and passive voice
-                </p>
                 <p className="text-green-700 dark:text-green-300">
                   <strong>Gerund:</strong> Verb acting as a noun (-ing form) - highlighted in green
+                </p>
+                <p>
+                  <strong>Past Participle:</strong> Used in perfect tenses and passive voice
                 </p>
               </div>
             </div>
